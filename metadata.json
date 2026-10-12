@@ -1,0 +1,6 @@
+{
+  "name": "EchoRead English - 3回音読・瞬時和訳リスニング学習",
+  "description": "1つの文章(.で終わる)を3回ずつ音読・シャドーイングする英語学習アプリ。瞬時和訳、文構造・単語の解説、白雪姫などの物語や最新サイエンス論文(Europe PMC)の英文に対応。",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
