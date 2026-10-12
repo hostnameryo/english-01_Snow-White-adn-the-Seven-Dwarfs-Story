@@ -14,6 +14,7 @@ import {
   Share2
 } from 'lucide-react';
 import { SentenceItem } from '../types';
+import { getSentenceLiteralTranslation } from '../data/literalTranslations';
 
 interface SentenceAnalysisDrawerProps {
   sentence: SentenceItem | null;
@@ -140,9 +141,27 @@ export const SentenceAnalysisDrawer: React.FC<SentenceAnalysisDrawerProps> = ({
               <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 block mb-1">
                 瞬時和訳（日本語の意味）:
               </span>
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
+              <p className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed mb-2.5">
                 {aiAnalysis?.translation || sentence.translation}
               </p>
+              {(() => {
+                const lit = aiAnalysis?.literalTranslation
+                  ? aiAnalysis.literalTranslation.trim().startsWith('(')
+                    ? aiAnalysis.literalTranslation.trim()
+                    : `(${aiAnalysis.literalTranslation.trim()})`
+                  : getSentenceLiteralTranslation(sentence);
+                if (!lit) return null;
+                return (
+                  <div className="pt-2 border-t border-indigo-100/60 dark:border-indigo-900/30">
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
+                      チャンクごとの直訳（語順通り）:
+                    </span>
+                    <p className="text-xs font-mono text-indigo-950 dark:text-indigo-300 leading-relaxed bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/40">
+                      {lit}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

@@ -20,6 +20,7 @@ export interface SentenceItem {
   id: string;
   text: string;
   translation: string;
+  literalTranslation?: string; // チャンクごとの直訳 (スラッシュリーディング)
   slideNumber?: number;
   structure?: SentenceStructure;
   vocabulary?: VocabularyItem[];

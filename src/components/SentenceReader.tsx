@@ -12,6 +12,7 @@ import {
   Share2
 } from 'lucide-react';
 import { SentenceItem, Story, TranslationDisplayMode } from '../types';
+import { getSentenceLiteralTranslation } from '../data/literalTranslations';
 
 interface SentenceReaderProps {
   story: Story;
@@ -255,27 +256,41 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                 })}
               </div>
 
-              {/* Instant Japanese Translation (和訳) */}
+              {/* Instant Japanese Translation (和訳) & Chunk Literal Translation (直訳) */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                 {isRevealed ? (
-                  <div className="flex items-start justify-between gap-2">
-                    <p
-                      className={`text-sm sm:text-base font-medium leading-relaxed ${
-                        isParchment
-                          ? 'text-[#5e4b3e]'
-                          : 'text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      {sent.translation}
-                    </p>
-                    {translationMode === 'reveal_on_click' && (
-                      <button
-                        onClick={() => onToggleRevealTranslation(sent.id)}
-                        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded"
-                        title="和訳を隠す"
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p
+                        className={`text-sm sm:text-base font-medium leading-relaxed ${
+                          isParchment
+                            ? 'text-[#5e4b3e]'
+                            : 'text-slate-800 dark:text-slate-200'
+                        }`}
                       >
-                        <EyeOff className="w-3.5 h-3.5" />
-                      </button>
+                        {sent.translation}
+                      </p>
+                      {translationMode === 'reveal_on_click' && (
+                        <button
+                          onClick={() => onToggleRevealTranslation(sent.id)}
+                          className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded shrink-0"
+                          title="和訳を隠す"
+                        >
+                          <EyeOff className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    {/* チャンクごとの直訳 (スラッシュ区切り・丸括弧) */}
+                    {getSentenceLiteralTranslation(sent) && (
+                      <p
+                        className={`text-xs sm:text-sm font-mono leading-relaxed tracking-wide ${
+                          isParchment
+                            ? 'text-[#876a54]'
+                            : 'text-indigo-600/90 dark:text-indigo-400/90'
+                        }`}
+                      >
+                        {getSentenceLiteralTranslation(sent)}
+                      </p>
                     )}
                   </div>
                 ) : (
@@ -284,7 +299,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                     className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-100/70 hover:bg-amber-200/80 text-amber-900 border border-amber-300/60 transition shadow-sm"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    タップして和訳（日本語の意味）を瞬時表示
+                    タップして和訳・直訳を瞬時表示
                   </button>
                 )}
               </div>

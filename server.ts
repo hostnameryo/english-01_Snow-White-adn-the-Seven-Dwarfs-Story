@@ -54,6 +54,7 @@ ${context ? `Context of paragraph: "${context}"` : ''}
 Provide a structured JSON output with the following exact keys:
 {
   "translation": "Natural Japanese translation (自然な和訳)",
+  "literalTranslation": "チャンクごとの直訳。スラッシュ/で区切り、必ず全体を丸括弧()で閉じること。例: (昔々 / 白雪姫という名の王女が / 城に住んでいた / 父親の国王と一緒に)",
   "structure": {
     "pattern": "e.g. SVO, SVC, SVOO, SVOC, 倒置構文, 分詞構文, etc.",
     "subject": "Main subject phrase in English",
@@ -122,7 +123,7 @@ app.post('/api/parse-custom-text', async (req: Request, res: Response) => {
 
     // If Gemini is available, generate translations in batch for high quality
     if (ai) {
-      const prompt = `Translate each of the following English sentences into natural Japanese.
+      const prompt = `Translate each of the following English sentences into natural Japanese, and also provide a chunk-by-chunk literal translation (語順通りの直訳/スラッシュリーディング) enclosed in parentheses (...).
 Sentences:
 ${JSON.stringify(rawSentences, null, 2)}
 
@@ -131,7 +132,8 @@ Return a JSON array of objects with the exact schema:
   {
     "index": 0,
     "text": "original sentence",
-    "translation": "日本語訳"
+    "translation": "自然な日本語訳",
+    "literalTranslation": "(チャンクごとの直訳 / スラッシュ区切り。必ず全体を丸括弧で閉じる)"
   }
 ]
 Return pure JSON only.`;
@@ -150,6 +152,7 @@ Return pure JSON only.`;
             id: `custom-${i + 1}`,
             text: sent,
             translation: match?.translation || '（和訳読み込み完了）',
+            literalTranslation: match?.literalTranslation || '(語順通りの直訳 / チャンク音読用)',
             structure: {
               pattern: 'SVO',
               notes: '3回音読してフレーズのリズムを体得しましょう。'
