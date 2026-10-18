@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { snowWhiteStory } from './data/snowWhiteStory';
+import { cinderellaStory } from './data/cinderellaStory';
 import { scienceStories } from './data/scienceStories';
 import { lookupWord, DictEntry } from './data/dictionary';
 import { Story, SentenceItem, TranslationDisplayMode, AudioSettings, StoryCategory } from './types';
@@ -205,18 +206,31 @@ export default function App() {
     setPopoverPosition({ x: event.clientX, y: event.clientY });
   };
 
-  const handleSelectCategory = (cat: StoryCategory) => {
-    if (cat === 'fairytale') {
+  const handleSelectStory = (storyId: string) => {
+    if (storyId === 'snow-white') {
       setCurrentStory(snowWhiteStory);
       setCurrentIndex(0);
       setCurrentRepeat(1);
       if (engineRef.current) engineRef.current.stop();
-    } else if (cat === 'science') {
-      // Pick default science story or open modal
+    } else if (storyId === 'cinderella') {
+      setCurrentStory(cinderellaStory);
+      setCurrentIndex(0);
+      setCurrentRepeat(1);
+      if (engineRef.current) engineRef.current.stop();
+    } else if (storyId === 'science') {
+      // Pick default science story
       setCurrentStory(scienceStories[0]);
       setCurrentIndex(0);
       setCurrentRepeat(1);
       if (engineRef.current) engineRef.current.stop();
+    }
+  };
+
+  const handleSelectCategory = (cat: StoryCategory) => {
+    if (cat === 'fairytale') {
+      handleSelectStory('snow-white');
+    } else if (cat === 'science') {
+      handleSelectStory('science');
     }
   };
 
@@ -248,10 +262,11 @@ export default function App() {
       {/* Top Navbar */}
       <Header
         currentCategory={currentStory.category}
+        currentStoryId={currentStory.id}
         translationMode={translationMode}
         completedCount={completedSentences.size}
         totalCount={currentStory.sentences.length}
-        onSelectCategory={handleSelectCategory}
+        onSelectStory={handleSelectStory}
         onChangeTranslationMode={setTranslationMode}
         onOpenScienceModal={() => setIsScienceModalOpen(true)}
         onOpenCustomModal={() => setIsCustomModalOpen(true)}
@@ -264,14 +279,25 @@ export default function App() {
         <div className="mb-6 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-slate-500 font-semibold text-[11px] mr-1">教材切り替え:</span>
           <button
-            onClick={() => handleSelectCategory('fairytale')}
+            onClick={() => handleSelectStory('snow-white')}
             className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
               currentStory.id === 'snow-white'
                 ? 'bg-amber-600 text-white shadow-sm'
                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-amber-400'
             }`}
           >
-            🍎 白雪姫 (Snow White 全47文)
+            🍎 白雪姫 (全47文)
+          </button>
+
+          <button
+            onClick={() => handleSelectStory('cinderella')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+              currentStory.id === 'cinderella'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-amber-400'
+            }`}
+          >
+            👠 シンデレラ (全76文)
           </button>
 
           {scienceStories.map((sci) => (

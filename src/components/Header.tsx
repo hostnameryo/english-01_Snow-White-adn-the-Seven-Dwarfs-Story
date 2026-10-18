@@ -14,10 +14,11 @@ import { TranslationDisplayMode, StoryCategory } from '../types';
 
 interface HeaderProps {
   currentCategory: StoryCategory;
+  currentStoryId: string;
   translationMode: TranslationDisplayMode;
   completedCount: number;
   totalCount: number;
-  onSelectCategory: (cat: StoryCategory) => void;
+  onSelectStory: (storyId: string) => void;
   onChangeTranslationMode: (mode: TranslationDisplayMode) => void;
   onOpenScienceModal: () => void;
   onOpenCustomModal: () => void;
@@ -26,10 +27,11 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   currentCategory,
+  currentStoryId,
   translationMode,
   completedCount,
   totalCount,
-  onSelectCategory,
+  onSelectStory,
   onChangeTranslationMode,
   onOpenScienceModal,
   onOpenCustomModal,
@@ -53,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <p className="text-[11px] text-slate-500 hidden sm:block">
-              1文3回音読シャドーイング & 瞬時和訳・構文解析
+              1文3回音読シャドーイング & 瞬時和訳・チャンク直訳
             </p>
           </div>
         </div>
@@ -61,9 +63,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Story Categories Selector Tabs */}
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700 text-xs">
           <button
-            onClick={() => onSelectCategory('fairytale')}
+            onClick={() => onSelectStory('snow-white')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
-              currentCategory === 'fairytale'
+              currentStoryId === 'snow-white'
                 ? 'bg-amber-500 text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
@@ -73,8 +75,20 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
+            onClick={() => onSelectStory('cinderella')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
+              currentStoryId === 'cinderella'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>👠</span>
+            <span>シンデレラ</span>
+          </button>
+
+          <button
             onClick={() => {
-              onSelectCategory('science');
+              onSelectStory('science');
               onOpenScienceModal();
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
@@ -90,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => {
-              onSelectCategory('custom');
+              onSelectStory('custom');
               onOpenCustomModal();
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
