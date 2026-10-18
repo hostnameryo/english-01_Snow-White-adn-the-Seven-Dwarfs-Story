@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { snowWhiteStory } from './data/snowWhiteStory';
 import { cinderellaStory } from './data/cinderellaStory';
+import { redRidingHoodStory } from './data/redRidingHoodStory';
+import { rapunzelStory } from './data/rapunzelStory';
+import { aliceStory } from './data/aliceStory';
 import { scienceStories } from './data/scienceStories';
 import { lookupWord, DictEntry } from './data/dictionary';
 import { Story, SentenceItem, TranslationDisplayMode, AudioSettings, StoryCategory } from './types';
@@ -217,6 +220,21 @@ export default function App() {
       setCurrentIndex(0);
       setCurrentRepeat(1);
       if (engineRef.current) engineRef.current.stop();
+    } else if (storyId === 'red-riding-hood') {
+      setCurrentStory(redRidingHoodStory);
+      setCurrentIndex(0);
+      setCurrentRepeat(1);
+      if (engineRef.current) engineRef.current.stop();
+    } else if (storyId === 'rapunzel') {
+      setCurrentStory(rapunzelStory);
+      setCurrentIndex(0);
+      setCurrentRepeat(1);
+      if (engineRef.current) engineRef.current.stop();
+    } else if (storyId === 'alice') {
+      setCurrentStory(aliceStory);
+      setCurrentIndex(0);
+      setCurrentRepeat(1);
+      if (engineRef.current) engineRef.current.stop();
     } else if (storyId === 'science') {
       // Pick default science story
       setCurrentStory(scienceStories[0]);
@@ -298,6 +316,17 @@ export default function App() {
             }`}
           >
             👠 シンデレラ (全76文)
+          </button>
+
+          <button
+            onClick={() => handleSelectStory('red-riding-hood')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+              currentStory.id === 'red-riding-hood'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-400'
+            }`}
+          >
+            🧺 赤ずきん (全43文)
           </button>
 
           {scienceStories.map((sci) => (

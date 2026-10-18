@@ -87,6 +87,42 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
+            onClick={() => onSelectStory('red-riding-hood')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
+              currentStoryId === 'red-riding-hood'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>🧺</span>
+            <span>赤ずきん</span>
+          </button>
+
+          <button
+            onClick={() => onSelectStory('rapunzel')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
+              currentStoryId === 'rapunzel'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>🏰</span>
+            <span>ラプンツェル</span>
+          </button>
+
+          <button
+            onClick={() => onSelectStory('alice')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition ${
+              currentStoryId === 'alice'
+                ? 'bg-teal-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>🐇</span>
+            <span>アリス</span>
+          </button>
+
+          <button
             onClick={() => {
               onSelectStory('science');
               onOpenScienceModal();
