@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { AudioSettings } from '../types';
+import { SpeechPhase } from '../services/speechService';
 
 interface AudioControlsProps {
   isPlaying: boolean;
@@ -21,6 +22,7 @@ interface AudioControlsProps {
   totalSentences: number;
   currentRepeat: number;
   repeatCount: number;
+  currentPhase?: SpeechPhase;
   intervalCountdown: number;
   settings: AudioSettings;
   availableVoices: SpeechSynthesisVoice[];
@@ -39,6 +41,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   totalSentences,
   currentRepeat,
   repeatCount,
+  currentPhase = 'normal',
   intervalCountdown,
   settings,
   availableVoices,
@@ -70,32 +73,77 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             </span>
           </div>
 
-          {/* Repetition 3-Step Badges */}
-          <div className="flex items-center gap-1.5">
-            {Array.from({ length: Math.min(5, repeatCount) }, (_, i) => i + 1).map((r) => {
-              const isActive = isPlaying && !isPaused && currentRepeat === r;
-              const isDone = isPlaying && currentRepeat > r;
-              return (
-                <div
-                  key={r}
-                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${
-                    isActive
-                      ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-300/60 dark:ring-amber-500/40 scale-105 animate-pulse'
-                      : isDone
-                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  <span>{r}回目</span>
-                  {r === 1 && <span className="hidden sm:inline text-[10px] font-normal opacity-90">(聞く)</span>}
-                  {r === 2 && <span className="hidden sm:inline text-[10px] font-normal opacity-90">(真似る)</span>}
-                  {r === 3 && <span className="hidden sm:inline text-[10px] font-normal opacity-90">(話す)</span>}
-                </div>
-              );
-            })}
+          {/* Repetition Step Badges */}
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+            {repeatCount === 4 ? (
+              // 4-repeat mode steps: 英語① -> 英語② -> 🇯🇵和訳 -> 🇯🇵直訳 -> 英語③ -> 英語④
+              [
+                { id: 'en_1', label: '1:英語①', desc: '聞く' },
+                { id: 'en_2', label: '2:英語②', desc: '真似る' },
+                { id: 'ja_translation', label: '🇯🇵和訳', desc: '意味' },
+                { id: 'ja_literal', label: '🇯🇵直訳', desc: '語順' },
+                { id: 'en_3', label: '3:英語③', desc: '定着' },
+                { id: 'en_4', label: '4:英語④', desc: '総仕上げ' }
+              ].map((step, idx) => {
+                const phaseOrder: SpeechPhase[] = [
+                  'en_1',
+                  'en_2',
+                  'ja_translation',
+                  'ja_literal',
+                  'en_3',
+                  'en_4'
+                ];
+                const currentPhaseIdx = phaseOrder.indexOf(currentPhase);
+                const stepIdx = idx;
+                const isActive = isPlaying && !isPaused && currentPhase === step.id;
+                const isDone = isPlaying && currentPhaseIdx > stepIdx;
+
+                return (
+                  <div
+                    key={step.id}
+                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-all ${
+                      isActive
+                        ? step.id.startsWith('ja')
+                          ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400 scale-105 animate-pulse'
+                          : 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-300 scale-105 animate-pulse'
+                        : isDone
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <span>{step.label}</span>
+                    <span className="hidden md:inline text-[9px] font-normal opacity-85">
+                      ({step.desc})
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              Array.from({ length: Math.min(5, repeatCount) }, (_, i) => i + 1).map((r) => {
+                const isActive = isPlaying && !isPaused && currentRepeat === r;
+                const isDone = isPlaying && currentRepeat > r;
+                return (
+                  <div
+                    key={r}
+                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${
+                      isActive
+                        ? 'bg-amber-500 text-white shadow-sm ring-2 ring-amber-300/60 dark:ring-amber-500/40 scale-105 animate-pulse'
+                        : isDone
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <span>{r}回目</span>
+                    {r === 1 && <span className="hidden sm:inline text-[10px] font-normal opacity-90">(聞く)</span>}
+                    {r === 2 && <span className="hidden sm:inline text-[10px] font-normal opacity-90">(真似る)</span>}
+                    {r === 3 && <span className="hidden sm:inline text-[10px] font-normal opacity-90">(話す)</span>}
+                  </div>
+                );
+              })
+            )}
 
             {intervalCountdown > 0 && (
-              <span className="ml-2 text-[11px] text-amber-600 dark:text-amber-400 font-mono font-bold bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800 animate-pulse">
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-mono font-bold bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800 animate-pulse">
                 次の音読まで {intervalCountdown}s
               </span>
             )}
@@ -116,20 +164,26 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
         <div className="flex items-center justify-between gap-3">
           {/* Left: Speed & Repeat Count Selectors */}
           <div className="flex items-center gap-2">
-            {/* Repeat count button selector */}
+            {/* Repeat count button selector with 4回 marked as standard */}
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
-              {[1, 2, 3, 5].map((cnt) => (
+              {[1, 2, 3, 4, 5].map((cnt) => (
                 <button
                   key={cnt}
                   onClick={() => onUpdateSettings({ repeatCount: cnt })}
                   className={`px-2 py-1 rounded-md font-semibold transition ${
                     settings.repeatCount === cnt
-                      ? 'bg-indigo-600 text-white shadow-sm'
+                      ? cnt === 4
+                        ? 'bg-amber-500 text-white shadow-sm ring-1 ring-amber-300'
+                        : 'bg-indigo-600 text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
-                  title={`${cnt}回ずつ音読`}
+                  title={
+                    cnt === 4
+                      ? '4回再生（標準: 英語2回 → 🇯🇵和訳 → 🇯🇵直訳 → 英語2回）'
+                      : `${cnt}回ずつ音読`
+                  }
                 >
-                  {cnt}回
+                  {cnt}回{cnt === 4 ? '★標準' : ''}
                 </button>
               ))}
             </div>

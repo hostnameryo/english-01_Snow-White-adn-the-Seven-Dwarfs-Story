@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Settings, Volume2, Clock, Gauge, Sliders } from 'lucide-react';
+import { X, Settings, Volume2, Clock, Gauge, Sliders, RotateCcw } from 'lucide-react';
 import { AudioSettings } from '../types';
 
 interface VoiceSettingsModalProps {
@@ -21,7 +21,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh]">
         <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
@@ -31,7 +31,7 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 音読・リピート設定
               </h2>
-              <p className="text-xs text-slate-500">音声速度やリピート間隔をカスタマイズ</p>
+              <p className="text-xs text-slate-500">再生リピート回数や音声速度をカスタマイズ</p>
             </div>
           </div>
           <button
@@ -42,7 +42,82 @@ export const VoiceSettingsModal: React.FC<VoiceSettingsModalProps> = ({
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-5 overflow-y-auto">
+          {/* Repeat count selection (4回再生が標準) */}
+          <div>
+            <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
+              <span className="flex items-center gap-1.5">
+                <RotateCcw className="w-4 h-4 text-amber-500" />
+                再生リピート回数
+              </span>
+              <span className="font-mono text-amber-600 dark:text-amber-400 font-bold">
+                {settings.repeatCount}回 {settings.repeatCount === 4 ? '(標準仕様)' : ''}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mb-2">
+              4回再生では、英語2回 → 🇯🇵和訳 → 🇯🇵直訳 → 英語2回を自動で発音します。
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ repeatCount: 4 })}
+                className={`p-2.5 rounded-xl text-left border transition ${
+                  settings.repeatCount === 4
+                    ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-500 text-amber-950 dark:text-amber-200 ring-2 ring-amber-400/40 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400'
+                }`}
+              >
+                <div className="flex items-center justify-between font-bold text-xs mb-1">
+                  <span>★ 4回再生（標準）</span>
+                  <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded font-semibold">推奨</span>
+                </div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                  英語2回 → 和訳 → 直訳 → 英語2回
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ repeatCount: 3 })}
+                className={`p-2.5 rounded-xl text-left border transition ${
+                  settings.repeatCount === 3
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-950 dark:text-indigo-200 ring-2 ring-indigo-400/40 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-400'
+                }`}
+              >
+                <div className="font-bold text-xs mb-1">3回再生</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                  英語リスニング → シャドーイング → 定着音読
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ repeatCount: 2 })}
+                className={`p-2.5 rounded-xl text-left border transition ${
+                  settings.repeatCount === 2
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-950 dark:text-indigo-200'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                <div className="font-bold text-xs mb-1">2回再生</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">英語のみ2回</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onUpdateSettings({ repeatCount: 1 })}
+                className={`p-2.5 rounded-xl text-left border transition ${
+                  settings.repeatCount === 1
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-950 dark:text-indigo-200'
+                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                <div className="font-bold text-xs mb-1">1回再生</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400">通し聴き (1回ずつ)</div>
+              </button>
+            </div>
+          </div>
           {/* Pause interval between repetitions (Shadowing time) */}
           <div>
             <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">

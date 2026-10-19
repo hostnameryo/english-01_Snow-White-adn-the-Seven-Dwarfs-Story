@@ -52,7 +52,7 @@ export type TranslationDisplayMode = 'always' | 'active_only' | 'reveal_on_click
 export interface AudioSettings {
   rate: number; // 0.6 - 1.3
   pitch: number; // 0.8 - 1.2
-  repeatCount: number; // default 3
+  repeatCount: number; // default 4 (標準: 英語2回 → 和訳 → 直訳 → 英語2回)
   pauseIntervalSeconds: number; // 0.8 - 3.0
   autoAdvance: boolean;
   voiceName: string;

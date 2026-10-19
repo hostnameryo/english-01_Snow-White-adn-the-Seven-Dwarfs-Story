@@ -13,12 +13,15 @@ import {
 } from 'lucide-react';
 import { SentenceItem, Story, TranslationDisplayMode } from '../types';
 import { getSentenceLiteralTranslation } from '../data/literalTranslations';
+import { SpeechPhase } from '../services/speechService';
 
 interface SentenceReaderProps {
   story: Story;
   sentences: SentenceItem[];
   currentIndex: number;
   currentRepeat: number;
+  repeatCount?: number;
+  currentPhase?: SpeechPhase;
   isPlaying: boolean;
   isPaused: boolean;
   translationMode: TranslationDisplayMode;
@@ -36,6 +39,8 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
   sentences,
   currentIndex,
   currentRepeat,
+  repeatCount = 4,
+  currentPhase = 'normal',
   isPlaying,
   isPaused,
   translationMode,
@@ -150,7 +155,8 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
           const isRevealed =
             translationMode === 'always' ||
             (translationMode === 'active_only' && isActive) ||
-            revealedSentences.has(sent.id);
+            revealedSentences.has(sent.id) ||
+            (isActive && (currentPhase === 'ja_translation' || currentPhase === 'ja_literal'));
 
           return (
             <div
@@ -198,32 +204,78 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   {isDone && (
                     <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                       <Check className="w-3 h-3" />
-                      3回音読済
+                      {repeatCount}回音読済
                     </span>
                   )}
                 </div>
 
-                {/* Active Sentence 3-Times Repetition Badge */}
+                {/* Active Sentence Repetition Badge */}
                 {isActive && (
                   <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
-                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500 text-white shadow-sm animate-pulse">
-                      <span>{currentRepeat} / 3 回目</span>
-                      {currentRepeat === 1 && (
-                        <span className="hidden sm:inline text-[10px] opacity-90">
-                          (リスニング)
-                        </span>
-                      )}
-                      {currentRepeat === 2 && (
-                        <span className="hidden sm:inline text-[10px] opacity-90">
-                          (シャドーイング)
-                        </span>
-                      )}
-                      {currentRepeat === 3 && (
-                        <span className="hidden sm:inline text-[10px] opacity-90">
-                          (定着音読)
-                        </span>
-                      )}
-                    </span>
+                    {repeatCount === 4 ? (
+                      <span
+                        className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm animate-pulse ${
+                          currentPhase === 'ja_translation'
+                            ? 'bg-amber-600 text-white ring-2 ring-amber-400/60'
+                            : currentPhase === 'ja_literal'
+                            ? 'bg-indigo-600 text-white ring-2 ring-indigo-400/60'
+                            : 'bg-amber-500 text-white'
+                        }`}
+                      >
+                        {currentPhase === 'en_1' && (
+                          <>
+                            <span>1 / 4 回目</span>
+                            <span className="hidden sm:inline text-[10px] opacity-90">(英語リスニング)</span>
+                          </>
+                        )}
+                        {currentPhase === 'en_2' && (
+                          <>
+                            <span>2 / 4 回目</span>
+                            <span className="hidden sm:inline text-[10px] opacity-90">(英語シャドーイング)</span>
+                          </>
+                        )}
+                        {currentPhase === 'ja_translation' && (
+                          <>
+                            <span>🇯🇵 和訳</span>
+                            <span className="text-[10px] opacity-95">読み上げ中…</span>
+                          </>
+                        )}
+                        {currentPhase === 'ja_literal' && (
+                          <>
+                            <span>🇯🇵 チャンク直訳</span>
+                            <span className="text-[10px] opacity-95">読み上げ中…</span>
+                          </>
+                        )}
+                        {currentPhase === 'en_3' && (
+                          <>
+                            <span>3 / 4 回目</span>
+                            <span className="hidden sm:inline text-[10px] opacity-90">(英語定着音読)</span>
+                          </>
+                        )}
+                        {currentPhase === 'en_4' && (
+                          <>
+                            <span>4 / 4 回目</span>
+                            <span className="hidden sm:inline text-[10px] opacity-90">(英語総仕上げ)</span>
+                          </>
+                        )}
+                        {(!currentPhase || currentPhase === 'normal') && (
+                          <span>{currentRepeat} / 4 回目</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500 text-white shadow-sm animate-pulse">
+                        <span>{currentRepeat} / {repeatCount} 回目</span>
+                        {currentRepeat === 1 && (
+                          <span className="hidden sm:inline text-[10px] opacity-90">(リスニング)</span>
+                        )}
+                        {currentRepeat === 2 && (
+                          <span className="hidden sm:inline text-[10px] opacity-90">(シャドーイング)</span>
+                        )}
+                        {currentRepeat === 3 && (
+                          <span className="hidden sm:inline text-[10px] opacity-90">(定着音読)</span>
+                        )}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -259,17 +311,30 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
               {/* Instant Japanese Translation (和訳) & Chunk Literal Translation (直訳) */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
                 {isRevealed ? (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <p
-                        className={`text-sm sm:text-base font-medium leading-relaxed ${
-                          isParchment
-                            ? 'text-[#5e4b3e]'
-                            : 'text-slate-800 dark:text-slate-200'
-                        }`}
-                      >
-                        {sent.translation}
-                      </p>
+                  <div className="flex flex-col gap-2">
+                    <div
+                      className={`flex items-start justify-between gap-2 p-2 rounded-xl transition-all ${
+                        isActive && currentPhase === 'ja_translation'
+                          ? 'bg-amber-100/90 dark:bg-amber-950/60 border border-amber-400 dark:border-amber-600 ring-2 ring-amber-400/40 shadow-sm'
+                          : ''
+                      }`}
+                    >
+                      <div className="flex-1">
+                        {isActive && currentPhase === 'ja_translation' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-200/80 dark:bg-amber-900/60 px-2 py-0.5 rounded-md mb-1 animate-pulse">
+                            🔊 和訳を発音中…
+                          </span>
+                        )}
+                        <p
+                          className={`text-sm sm:text-base font-medium leading-relaxed ${
+                            isParchment
+                              ? 'text-[#5e4b3e]'
+                              : 'text-slate-800 dark:text-slate-200'
+                          }`}
+                        >
+                          {sent.translation}
+                        </p>
+                      </div>
                       {translationMode === 'reveal_on_click' && (
                         <button
                           onClick={() => onToggleRevealTranslation(sent.id)}
@@ -280,17 +345,31 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                         </button>
                       )}
                     </div>
+
                     {/* チャンクごとの直訳 (スラッシュ区切り・丸括弧) */}
                     {getSentenceLiteralTranslation(sent) && (
-                      <p
-                        className={`text-xs sm:text-sm font-mono leading-relaxed tracking-wide ${
-                          isParchment
-                            ? 'text-[#876a54]'
-                            : 'text-indigo-600/90 dark:text-indigo-400/90'
+                      <div
+                        className={`p-2 rounded-xl transition-all ${
+                          isActive && currentPhase === 'ja_literal'
+                            ? 'bg-indigo-100/90 dark:bg-indigo-950/60 border border-indigo-400 dark:border-indigo-600 ring-2 ring-indigo-400/40 shadow-sm'
+                            : ''
                         }`}
                       >
-                        {getSentenceLiteralTranslation(sent)}
-                      </p>
+                        {isActive && currentPhase === 'ja_literal' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-200/80 dark:bg-indigo-900/60 px-2 py-0.5 rounded-md mb-1 animate-pulse">
+                            🔊 直訳（チャンク）を発音中…
+                          </span>
+                        )}
+                        <p
+                          className={`text-xs sm:text-sm font-mono leading-relaxed tracking-wide ${
+                            isParchment
+                              ? 'text-[#876a54]'
+                              : 'text-indigo-600/90 dark:text-indigo-400/90'
+                          }`}
+                        >
+                          {getSentenceLiteralTranslation(sent)}
+                        </p>
+                      </div>
                     )}
                   </div>
                 ) : (

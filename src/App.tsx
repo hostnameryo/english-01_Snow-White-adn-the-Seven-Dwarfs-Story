@@ -8,7 +8,8 @@ import { aliceStory } from './data/aliceStory';
 import { scienceStories } from './data/scienceStories';
 import { lookupWord, DictEntry } from './data/dictionary';
 import { Story, SentenceItem, TranslationDisplayMode, AudioSettings, StoryCategory } from './types';
-import { SpeechEngine } from './services/speechService';
+import { SpeechEngine, SpeechPhase, PlayableItem } from './services/speechService';
+import { getSentenceLiteralTranslation } from './data/literalTranslations';
 
 import { Header } from './components/Header';
 import { SentenceReader } from './components/SentenceReader';
@@ -23,6 +24,7 @@ export default function App() {
   const [currentStory, setCurrentStory] = useState<Story>(snowWhiteStory);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentRepeat, setCurrentRepeat] = useState(1);
+  const [currentPhase, setCurrentPhase] = useState<SpeechPhase>('en_1');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [intervalCountdown, setIntervalCountdown] = useState(0);
@@ -35,7 +37,7 @@ export default function App() {
   const [settings, setSettings] = useState<AudioSettings>({
     rate: 1.0,
     pitch: 1.0,
-    repeatCount: 3,
+    repeatCount: 4, // 4回再生が標準仕様（英語2回 → 和訳 → 直訳 → 英語2回）
     pauseIntervalSeconds: 1.2,
     autoAdvance: true,
     voiceName: ''
@@ -61,8 +63,9 @@ export default function App() {
       onSentenceStart: (idx) => {
         setCurrentIndex(idx);
       },
-      onRepeatChange: (repeatIdx, _total) => {
+      onRepeatChange: (repeatIdx, _total, phase) => {
         setCurrentRepeat(repeatIdx);
+        if (phase) setCurrentPhase(phase);
       },
       onIntervalCountdown: (sec) => {
         setIntervalCountdown(sec);
@@ -148,11 +151,19 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, isPaused, currentIndex, currentStory]);
 
+  const getPlayableItems = (): PlayableItem[] => {
+    return currentStory.sentences.map((s) => ({
+      text: s.text,
+      translation: s.translation,
+      literalTranslation: getSentenceLiteralTranslation(s) || s.literalTranslation,
+    }));
+  };
+
   const handleTogglePlayPause = () => {
     if (!engineRef.current) return;
-    const texts = currentStory.sentences.map((s) => s.text);
+    const items = getPlayableItems();
     if (!isPlaying) {
-      engineRef.current.start(texts, currentIndex);
+      engineRef.current.start(items, currentIndex);
     } else {
       engineRef.current.togglePlayPause();
     }
@@ -161,11 +172,11 @@ export default function App() {
   const handleSelectSentence = (idx: number) => {
     setCurrentIndex(idx);
     if (!engineRef.current) return;
-    const texts = currentStory.sentences.map((s) => s.text);
+    const items = getPlayableItems();
     if (isPlaying) {
       engineRef.current.jumpToSentence(idx);
     } else {
-      engineRef.current.start(texts, idx);
+      engineRef.current.start(items, idx);
     }
   };
 
@@ -329,6 +340,28 @@ export default function App() {
             🧺 赤ずきん (全43文)
           </button>
 
+          <button
+            onClick={() => handleSelectStory('rapunzel')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+              currentStory.id === 'rapunzel'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-purple-400'
+            }`}
+          >
+            🏰 ラプンツェル (全30スライド)
+          </button>
+
+          <button
+            onClick={() => handleSelectStory('alice')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+              currentStory.id === 'alice'
+                ? 'bg-sky-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-sky-400'
+            }`}
+          >
+            🐇 アリス (全7章)
+          </button>
+
           {scienceStories.map((sci) => (
             <button
               key={sci.id}
@@ -358,16 +391,17 @@ export default function App() {
           </button>
         </div>
 
-        {/* Feature Banner: 3-Times Reading Instructions */}
+        {/* Feature Banner: 4-Times Repetition Instructions */}
         <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-blue-500/10 border border-amber-300/40 dark:border-amber-600/30 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
             <span className="text-xl">🎧</span>
             <div>
-              <span className="font-bold text-slate-900 dark:text-slate-100 block">
-                1文（.で終わる文）を3回ずつ音読するシャドーイング学習法
+              <span className="font-bold text-slate-900 dark:text-slate-100 block flex items-center gap-2">
+                <span>1文（.で終わる文）を4回再生する反復学習法</span>
+                <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">標準仕様</span>
               </span>
-              <span className="text-slate-600 dark:text-slate-400 text-[11px]">
-                1回目: 音とリズムを聴く → 2回目: 声に出して真似る → 3回目: 意味を噛み締めながら音読定着
+              <span className="text-slate-600 dark:text-slate-400 text-[11px] block mt-0.5">
+                英語2回（リスニング・シャドーイング） → 🇯🇵和訳発音 → 🇯🇵直訳発音 → 英語2回（定着音読・総仕上げ）
               </span>
             </div>
           </div>
@@ -382,6 +416,8 @@ export default function App() {
           sentences={currentStory.sentences}
           currentIndex={currentIndex}
           currentRepeat={currentRepeat}
+          repeatCount={settings.repeatCount}
+          currentPhase={currentPhase}
           isPlaying={isPlaying}
           isPaused={isPaused}
           translationMode={translationMode}
@@ -406,6 +442,7 @@ export default function App() {
         totalSentences={currentStory.sentences.length}
         currentRepeat={currentRepeat}
         repeatCount={settings.repeatCount}
+        currentPhase={currentPhase}
         intervalCountdown={intervalCountdown}
         settings={settings}
         availableVoices={availableVoices}
